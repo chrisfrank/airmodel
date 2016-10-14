@@ -1,0 +1,8 @@
+:example_model:
+  :table_name: example_models
+  :base_id: example_base_id
+:example_sharded_model:
+  :table_name: example_sharded_models
+  :shards:
+    "east_coast": example_base_id
+    "west_coast": example_base_id_on_west_coast

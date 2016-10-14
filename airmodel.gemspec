@@ -1,5 +1,6 @@
 lib = File.expand_path('../lib', __FILE__)
 $LOAD_PATH.unshift(lib) unless $LOAD_PATH.include?(lib)
+require 'airmodel/version'
 
 Gem::Specification.new do |spec|
   spec.name          = 'airmodel'
@@ -18,5 +19,6 @@ Gem::Specification.new do |spec|
   spec.add_development_dependency 'bundler'
   spec.add_development_dependency 'rake'
 
-  spec.add_dependency 'airtable', '>= 0.0.9'
+  spec.add_dependency 'airtable', '~> 0.0.8'
+  spec.add_dependency 'activesupport', '~> 5.0.0'
 end
