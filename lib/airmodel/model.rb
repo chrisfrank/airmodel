@@ -1,33 +1,32 @@
 module Airmodel
   class Model < Airtable::Record
 
-    def self.client
-      Airmodel::Bases.client
+    def self.table_name
+      self.name.tableize.to_sym
     end
 
     # return an array of Airtable::Table objects,
-    # each backed by a base defined in DB yaml file
+    # each backed by a base defined in DB YAML file
     def self.tables(args={})
-      db = Airmodel::Bases.load[self.name.tableize.to_sym] || raise(NoSuchBase)
-      if db[:shards]
-        if args[:shard] && db[:shards][args[:shard]]
-          [client.table(db[:shards][args.delete(:shard)], db[:table_name])]
-        else
-          db[:shards].map{|key,val| client.table val, db[:table_name]}
-        end
+      db = Airmodel.bases[table_name] || raise(NoSuchBase.new("Could not find base '#{table_name}' in config file"))
+      bases = normalized_base_config(db[:bases])
+      # return just one Airtable::Table if a particular shard was requested
+      if args[:shard]
+        [Airmodel.client.table(bases[args.delete(:shard)], db[:table_name])]
+      # otherwise return each one
       else
-        [client.table(db[:base_id], db[:table_name])]
+        bases.map{|key, val| Airmodel.client.table val, db[:table_name] }
       end
     end
 
     def self.at(base_id, table_name)
-      client.table(base_id, table_name)
+      Airmodel.client.table(base_id, table_name)
     end
 
     ## converts array of generic airtable records to the instances
     # of the appropriate class
-    def self.classify(records=[])
-      records.map{|r| self.new(r.fields) }
+    def self.classify(list=[])
+      list.map{|r| self.new(r.fields) }
     end
 
     # returns all records in the database, making as many calls as necessary
@@ -116,6 +115,26 @@ module Airmodel
           h[k] = false
         end
       }
+    end
+
+    # standardizes bases from config file, whether you've defined
+    # your bases as a single string, a hash, an array,
+    # or an array of hashes, returns hash of form { "base_label" => "base_id" }
+    def self.normalized_base_config(config)
+      if config.is_a? String
+        { "#{config}" => config }
+      elsif config.is_a? Array
+        parsed = config.map{|x|
+          if x.respond_to? :keys
+            [x.keys.first, x.values.first]
+          else
+            [x,x]
+          end
+        }
+        Hash[parsed]
+      else
+        config
+      end
     end
 
     # INSTANCE METHODS

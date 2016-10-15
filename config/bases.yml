@@ -1,0 +1,8 @@
+:test_models:
+  :table_name: "example_table"
+  :bases: appXYZ
+:sharded_test_models:
+  :table_name: "example_table"
+  :bases: 
+    "nyc": appLGA
+    "sf": appSFO

@@ -5,6 +5,21 @@ Dir["#{File.dirname(__FILE__)}/airmodel/*.rb"].each {|f| require f }
 
 # builds ActiveRecord-style models on top of Airtable
 module Airmodel
+
+  def self.root
+    File.expand_path '../..', __FILE__
+  end
+
+  def self.client(api_key=ENV["AIRTABLE_API_KEY"])
+    @@api_client ||= Airtable::Client.new(api_key)
+    @@api_client
+  end
+
+  def self.bases(path_to_config_file="#{Airmodel.root}/config/bases.yml")
+    @@bases ||= YAML.load_file(path_to_config_file)
+    @@bases
+  end
+
 end
 
 # monkeypatch airtable-ruby to add v 0.0.9's PATCH method,
