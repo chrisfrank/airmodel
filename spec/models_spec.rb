@@ -32,7 +32,7 @@ describe TestModel do
 
     describe "records" do
       it "should return a list of airtable records" do
-        stub_airtable_response! "https://api.airtable.com/v0/#{config[:bases]}/#{config[:table_name]}", { "records" => [{"id": "recXYZ", fields: {} }], "offset" => "abcde" }
+        stub_airtable_response! "https://api.airtable.com/v0/#{config[:bases]}/#{config[:table_name]}", { "records" => [{"id": "recXYZ", fields: {} }] }
         records = TestModel.records
         expect(records.first.id).to eq "recXYZ"
       end
@@ -47,7 +47,11 @@ describe TestModel do
     end
 
     describe "all" do
-      it "should return a list of airtable records"
+      it "should return a list of airtable records" do
+        stub_airtable_response! "https://api.airtable.com/v0/#{config[:bases]}/#{config[:table_name]}", { "records" => [{"id": "recXYZ", fields: {} }] }
+        records = TestModel.all
+        expect(records.first.id).to eq "recXYZ"
+      end
     end
 
     describe "where" do
