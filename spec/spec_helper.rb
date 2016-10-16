@@ -5,7 +5,7 @@ require 'pry'
 def stub_airtable_response!(url, response, method=:get)
   FakeWeb.register_uri(
     method,
-    Regexp.new(url),
+    url,
     body: response.to_json,
     content_type: "application/json"
   )

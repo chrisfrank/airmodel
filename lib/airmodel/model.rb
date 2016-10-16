@@ -180,7 +180,7 @@ module Airmodel
     end
 
     def cache_key
-      "#{self.class.name.tableize}_#{self.id}"
+      "#{self.class.table_name}_#{self.id}"
     end
 
     def valid?
