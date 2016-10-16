@@ -15,6 +15,8 @@ RSpec.configure do |config|
   config.color = true
 end
 
+FakeWeb.allow_net_connect = false
+
 # enable Debug mode in Airtable
 module Airtable
   # Base class for authorized resources sending network requests

@@ -1,33 +1,6 @@
 module Airmodel
   class Model < Airtable::Record
-
-    def self.table_name
-      self.name.tableize.to_sym
-    end
-
-    # return an array of Airtable::Table objects,
-    # each backed by a base defined in DB YAML file
-    def self.tables(args={})
-      db = Airmodel.bases[table_name] || raise(NoSuchBase.new("Could not find base '#{table_name}' in config file"))
-      bases = normalized_base_config(db[:bases])
-      # return just one Airtable::Table if a particular shard was requested
-      if args[:shard]
-        [Airmodel.client.table(bases[args.delete(:shard)], db[:table_name])]
-      # otherwise return each one
-      else
-        bases.map{|key, val| Airmodel.client.table val, db[:table_name] }
-      end
-    end
-
-    def self.at(base_id, table_name)
-      Airmodel.client.table(base_id, table_name)
-    end
-
-    ## converts array of generic airtable records to the instances
-    # of the appropriate class
-    def self.classify(list=[])
-      list.map{|r| self.new(r.fields) }
-    end
+    extend Utils
 
     # returns all records in the database, making as many calls as necessary
     # to work around Airtable's 100-record per page design
@@ -101,42 +74,6 @@ module Airmodel
       self.new(r.fields)
     end
 
-    # convert blank strings to nil, [""] to [], and "true" to a boolean
-    def self.airtable_formatted(hash)
-      h = hash.dup
-      h.each{|k,v|
-        if v == [""]
-          h[k] = []
-        elsif v == ""
-          h[k] = nil
-        elsif v == "true"
-          h[k] = true
-        elsif v == "false"
-          h[k] = false
-        end
-      }
-    end
-
-    # standardizes bases from config file, whether you've defined
-    # your bases as a single string, a hash, an array,
-    # or an array of hashes, returns hash of form { "base_label" => "base_id" }
-    def self.normalized_base_config(config)
-      if config.is_a? String
-        { "#{config}" => config }
-      elsif config.is_a? Array
-        parsed = config.map{|x|
-          if x.respond_to? :keys
-            [x.keys.first, x.values.first]
-          else
-            [x,x]
-          end
-        }
-        Hash[parsed]
-      else
-        config
-      end
-    end
-
     # INSTANCE METHODS
 
     def formatted_fields
@@ -152,9 +89,10 @@ module Airmodel
           # return the first version of this record that saved successfully
           results.find{|x| !!x }
         else
-          self.class.tables(shard: shard).map{|tbl|
+          results = self.class.tables(shard: shard).map{|tbl|
             tbl.update_record_fields(id, self.changed_fields)
           }
+          results.find{|x| !!x }
         end
       else
         false
@@ -164,15 +102,17 @@ module Airmodel
     def changed_fields
       current = fields
       old = self.class.find_by(id: id, shard: shard_identifier).fields
-      current.diff(old)
+      self.class.hash_diff(current, old)
     end
 
     def destroy
-      self.class.tables(shard: shard_identifier).map{|tbl| tbl.destroy(id) }
+      self.class.tables(shard: shard_identifier).map{|tbl| tbl.destroy(id) }.first
     end
 
     def update(fields)
-      self.class.tables(shard: shard_identifier).map{|tbl| tbl.update_record_fields(id, fields) }
+      res = self.class.tables(shard: shard_identifier).map{|tbl| tbl.update_record_fields(id, fields) }.first
+      res.fields.each{|field, value| self[field] = value }
+      true
     end
 
     def new_record?
@@ -183,14 +123,19 @@ module Airmodel
       "#{self.class.table_name}_#{self.id}"
     end
 
+    # override if you want to write server-side model validations
     def valid?
       true
     end
 
+    # override if you want to return validation errors
     def errors
       {}
     end
 
+    # getter method that should return the YAML key that defines
+    # which shard the record lives in. Override if you're sharding
+    # your data, otherwise just let it return nil
     def shard_identifier
       nil
     end

@@ -3,19 +3,19 @@ require 'spec_helper'
 class TestModel < Airmodel::Model
 end
 
-class ShardedTestModel < Airmodel::Model
-end
-
-class BaselessTestModel < Airmodel::Model
-end
-
 describe TestModel do
 
   before(:each) do
     config = Airmodel.bases[:test_models]
+    #stub INDEX requests
     stub_airtable_response!(
       Regexp.new("https://api.airtable.com/v0/#{config[:bases]}/#{config[:table_name]}"),
       { "records" => [{"id": "recXYZ", fields: {"color":"red"} }, {"id":"recABC", fields: {"color": "blue"} }] }
+    )
+    #stub CREATE requests
+    stub_airtable_response!("https://api.airtable.com/v0/appXYZ/example_table",
+      { "fields" => { "color" => "red", "foo" => "bar" }, "id" => "12345" },
+      :post
     )
   end
 
@@ -96,10 +96,6 @@ describe TestModel do
 
     describe "create" do
       it "should create a new record" do
-        stub_airtable_response!("https://api.airtable.com/v0/appXYZ/example_table",
-          { "fields" => { "color" => "red", "foo" => "bar" }, "id" => "12345" },
-          :post
-        )
         record = TestModel.create(color: "red")
         expect(record.id).to eq "12345"
       end
@@ -107,10 +103,6 @@ describe TestModel do
 
     describe "patch" do
       it "should update a record" do
-        stub_airtable_response!("https://api.airtable.com/v0/appXYZ/example_table",
-          { "fields" => { "color" => "red", "foo" => "bar" }, "id" => "12345" },
-          :post
-        )
         stub_airtable_response!(Regexp.new("/v0/appXYZ/example_table/12345"),
           { "fields" => { "color" => "blue", "foo" => "bar" }, "id" => "12345" },
           :patch
@@ -124,29 +116,106 @@ describe TestModel do
   end
 
   describe "Instance Methods" do
+
     describe "save" do
-      it "should create a new record"
-      it "should update an existing record"
+      record = TestModel.new(color: "red")
+      it "should create a new record" do
+        record.save
+        expect(record.id).to eq "12345"
+      end
+      it "should update an existing record" do
+        stub_airtable_response!("https://api.airtable.com/v0/appXYZ/example_table/12345",
+          { "fields" => { "color" => "red", "foo" => "bar" }, "id" => "12345" },
+          :get
+        )
+        stub_airtable_response!("https://api.airtable.com/v0/appXYZ/example_table/12345",
+          { "fields" => { "color" => "blue" }, "id" => "12345" },
+          :patch
+        )
+        record[:color] = "blue"
+        record.save
+        expect(record.color).to eq "blue"
+      end
     end
+
     describe "destroy" do
-      it "should delete a record"
+      it "should delete a record" do
+        stub_airtable_response!("https://api.airtable.com/v0/appXYZ/example_table/12345",
+          { "deleted": true, "id" => "12345" },
+          :delete
+        )
+        response = TestModel.new(id: "12345").destroy
+        expect(response["deleted"]).to eq true
+      end
     end
+
     describe "update" do
-      it "should update the supplied attrs on an existing record"
+      it "should update the supplied attrs on an existing record" do
+        stub_airtable_response!("https://api.airtable.com/v0/appXYZ/example_table/12345",
+          { "fields" => { "color" => "green"}, "id" => "12345" },
+          :patch
+        )
+        record = TestModel.create(color: "red", id:"12345")
+        record.update(color: "green")
+        expect(record.color).to eq "green"
+      end
     end
+
     describe "cache_key" do
-      it "should return a unique key that can be used to id this record in memcached"
+      it "should return a unique key that can be used to id this record in memcached" do
+        record = TestModel.new(id: "recZXY")
+        expect(record.cache_key).to eq "test_models_recZXY"
+      end
     end
+
     describe "changed_fields" do
-      it "should return a hash of attrs changed since last save"
+      it "should return a hash of attrs changed since last save" do
+        stub_airtable_response!("https://api.airtable.com/v0/appXYZ/example_table/12345",
+          { fields: { 'color': 'red' }, "id" => "12345" },
+          :get
+        )
+        record = TestModel.create(color: 'red')
+        record[:color] = 'green'
+        expect(record.changed_fields).to have_key 'color'
+      end
     end
+
     describe "new_record?" do
-      it "should return true if the record hasn't been saved to airtable yet"
+      it "should return true if the record hasn't been saved to airtable yet" do
+        record = TestModel.new(color: 'red')
+        expect(record.new_record?).to eq true
+      end
     end
+
     describe "formatted_fields" do
-      it "should convert empty arrays [''] to []"
+      attrs = {
+        "empty_array": [''],
+        "empty_array_bis": [""],
+        "blank_string": "",
+        "truthy_string": "true",
+        "falsy_string": "false"
+      }
+      record = TestModel.new(attrs)
+      formatted_attrs = record.formatted_fields
+      it "should convert empty arrays [''] to []" do
+        expect(formatted_attrs["empty_array"]).to eq []
+        expect(formatted_attrs["empty_array_bis"]).to eq []
+      end
+      it "should convert blank strings to nil" do
+        expect(formatted_attrs["blank_string"]).to eq nil
+      end
+      it "should convert 'true' to a boolean" do
+        expect(formatted_attrs["truthy_string"]).to eq true
+      end
+      it "should convert 'false' to a boolean" do
+        expect(formatted_attrs["falsy_string"]).to eq false
+      end
     end
+
   end
+end
+
+class ShardedTestModel < Airmodel::Model
 end
 
 describe ShardedTestModel do
@@ -190,5 +259,19 @@ describe ShardedTestModel do
       end
     end
 
+  end
+end
+
+class BaselessTestModel < Airmodel::Model
+end
+
+describe BaselessTestModel do
+  describe "it should raise a NoSuchBaseError when no base is defined" do
+    begin
+      records = BaselessTestModel.records
+      false
+    rescue Airmodel::NoSuchBase
+      true
+    end
   end
 end

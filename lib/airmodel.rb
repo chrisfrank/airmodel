@@ -1,7 +1,10 @@
 require 'active_support/all'
 require 'airtable'
 
-Dir["#{File.dirname(__FILE__)}/airmodel/*.rb"].each {|f| require f }
+#Dir["#{File.dirname(__FILE__)}/airmodel/*.rb"].each {|f| require f }
+require "airmodel/version"
+require "airmodel/utils"
+require "airmodel/model"
 
 # builds ActiveRecord-style models on top of Airtable
 module Airmodel
