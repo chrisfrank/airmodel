@@ -1,16 +1,17 @@
 Airmodel
---------
+===========
+
 Interact with your Airtable data using ActiveRecord-style models.
 
 Installation
-===============
+----------------
 
 Add this line to your Gemfile:
 
 		gem install 'airmodel', git: 'https://github.com/chrisfrank/airmodel.git'
 
 Configuration
-===============
+----------------
 1. Supply your Airtable API key, either by setting ENV['AIRTABLE_API_KEY'], or
 by puting this call somewhere in your app's init block:
 
@@ -41,7 +42,7 @@ west-coast bases, for example, your YAML file should look like this:
 				"west_coast": appWXYOMGWTF
 
 Usage
-=====
+----------------
 
 Create a class for each key in your YAML file. You should name it after the 
 singularized version of your YAML key:
@@ -65,11 +66,11 @@ Now you can write code like
 See lib/airmodel/model.rb for a full list of class and instance methods.
 
 
-Contributing
-===============
+Contributions
+----------------
 
 Add a test to spec/models_spec.rb, make sure it passes, then send a pull
-request.
+request. Thanks!
 
 
 
