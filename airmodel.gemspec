@@ -7,8 +7,8 @@ Gem::Specification.new do |spec|
   spec.version       = Airmodel::VERSION
   spec.authors       = ['chrisfrankdotfm']
   spec.email         = ['chris.frank@thefutureproject.org']
-  spec.description   = 'Builds AR-style models on top of airtable-ruby.'
-  spec.summary       = 'Builds AR-style models on top of airtable-ruby.'
+  spec.description   = 'Airtable data in ActiveRecord-style syntax'
+  spec.summary       = 'Interact with your Airtable data using ActiveRecord-style models'
   spec.homepage      = 'https://github.com/chrisfrank/airmodel'
   spec.license       = 'MIT'
 

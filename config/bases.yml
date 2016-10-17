@@ -3,6 +3,6 @@
   :bases: appXYZ
 :sharded_test_models:
   :table_name: "example_table"
-  :bases: 
+  :bases:
     "nyc": appLGA
     "sf": appSFO
