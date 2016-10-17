@@ -12,13 +12,17 @@ Add this line to your Gemfile:
 
 Configuration
 ----------------
-1. Supply your Airtable API key, either by setting ENV['AIRTABLE_API_KEY'], or
-by putting this line somewhere in your app's init block:
+1. Supply your Airtable API key, either by setting ENV['AIRTABLE_API_KEY']
+before your app starts...
+
+    ENV['AIRTABLE_API_KEY'] = YOUR_API_KEY
+
+... or by putting this line somewhere in your app's init block:
 
 		Airmodel.client(YOUR_API_KEY_HERE)
 
 2. Tell Airmodel where your bases are, either by creating a YAML file at
-config/bases.yml, or with this somewhere in your init block:
+*config/bases.yml*, or with this line somewhere in your init block:
 
 		Airmodel.bases(path_to_your_yaml_file)
 
@@ -61,9 +65,9 @@ Now you can write code like
 
 		Song.new("Name": "Best Song Ever").save
 
-		Song.where("Artist Name": "The Beatles", "Composer" : "Harrison")
+		Song.where("Artist Name": "The Beatles", "Composer": "Harrison")
 
-See lib/airmodel/model.rb for a full list of class and instance methods.
+See lib/airmodel/model.rb for all available methods.
 
 
 Contributions
