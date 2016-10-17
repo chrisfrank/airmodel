@@ -13,7 +13,7 @@ Add this line to your Gemfile:
 Configuration
 ----------------
 1. Supply your Airtable API key, either by setting ENV['AIRTABLE_API_KEY'], or
-by puting this call somewhere in your app's init block:
+by putting this line somewhere in your app's init block:
 
 		Airmodel.client(YOUR_API_KEY_HERE)
 
