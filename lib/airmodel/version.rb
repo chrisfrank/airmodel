@@ -1,3 +1,3 @@
 module Airmodel
-  VERSION = '0.0.1pre'
+  VERSION = '0.0.1'
 end

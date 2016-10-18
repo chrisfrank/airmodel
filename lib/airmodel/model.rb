@@ -2,31 +2,27 @@ module Airmodel
   class Model < Airtable::Record
     extend Utils
 
-    # returns all records in the database, making as many calls as necessary
-    # to work around Airtable's 100-record per page design
+    # returns all records in a table, making as many calls as necessary
+    # to work around Airtable's 100-record per page design. This can be VERY
+    # slow, and should not be used in production unless you cache it agressively.
+    # Where possible, use Model.some instead.
     def self.all(args={sort: default_sort})
       puts "RUNNING EXPENSIVE API QUERY TO AIRTABLE (#{self.name})"
       self.classify tables(args).map{|tbl| tbl.all(args)}.flatten
     end
 
     # returns up to 100 records from Airtable
-    def self.records(args={sort: default_sort})
+    def self.some(args={sort: default_sort})
       puts "RUNNING EXPENSIVE API QUERY TO AIRTABLE (#{self.name})"
       self.classify tables(args).map{|tbl| tbl.records(args) }.flatten
     end
 
-    # default to whatever order airtable returns
-    # this method gets overridden on Airtabled classes
-    def self.default_sort
-      nil
-    end
-
-    # find records that match the filters
+    # find up to 100 records that match the filters
     def self.where(filters)
       shard = filters.delete(:shard)
       order = filters.delete(:sort)
       formula = "AND(" + filters.map{|k,v| "{#{k}}='#{v}'" }.join(',') + ")"
-      records(
+      some(
         shard: shard,
         sort: order,
         filterByFormula: formula,
@@ -40,7 +36,7 @@ module Airmodel
         results = self.classify tables(shard: shard).map{|tbl| tbl.find(filters[:id]) }
       else
         formula = "AND(" + filters.map{|k,v| "{#{k}}='#{v}'" }.join(',') + ")"
-        results = records(
+        results = some(
           shard: shard,
           filterByFormula: formula,
           limit: 1
@@ -49,17 +45,23 @@ module Airmodel
       results.count == 0 ? nil : results.first
     end
 
+    # default to whatever order Airtable returns
+    # override this method if you want to sort by something else
+    def self.default_sort
+      nil
+    end
+
     # return the first record
     def self.first
-      results = records(
+      results = some(
         limit: 1
       )
       results.count == 0 ? nil : results.first
     end
 
     # create a new record and save it to Airtable
-    def self.create(*records)
-      results = records.map{|r|
+    def self.create(*models)
+      results = models.map{|r|
         record = self.new(r)
         tables.map{|tbl| tbl.create(record) }.first
       }

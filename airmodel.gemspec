@@ -22,6 +22,6 @@ Gem::Specification.new do |spec|
   spec.add_development_dependency 'pry', '~> 0.10'
   spec.add_development_dependency 'fakeweb', '~> 1.3'
 
-  spec.add_dependency 'airtable', '~> 0.0.8'
+  spec.add_dependency 'airtable', '~> 0.0.9'
   spec.add_dependency 'activesupport', '~> 5.0'
 end

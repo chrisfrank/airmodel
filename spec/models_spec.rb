@@ -41,9 +41,9 @@ describe TestModel do
       end
     end
 
-    describe "records" do
+    describe "some" do
       it "should return a list of airtable records" do
-        records = TestModel.records
+        records = TestModel.some
         expect(records.first.id).to eq "recXYZ"
       end
     end
@@ -268,7 +268,7 @@ end
 describe BaselessTestModel do
   describe "it should raise a NoSuchBaseError when no base is defined" do
     begin
-      records = BaselessTestModel.records
+      records = BaselessTestModel.some
       false
     rescue Airmodel::NoSuchBase
       true

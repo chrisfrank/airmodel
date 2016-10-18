@@ -61,6 +61,8 @@ Now you can write code like
 
 		Song.all
 
+		Song.some
+
 		Song.first
 
 		Song.new("Name": "Best Song Ever").save
