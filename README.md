@@ -8,7 +8,7 @@ Installation
 
 Add this line to your Gemfile:
 
-		gem install 'airmodel', git: 'https://github.com/chrisfrank/airmodel.git'
+		gem install 'airmodel'
 
 Configuration
 ----------------
