@@ -17,7 +17,7 @@ module Airmodel
     @@api_client
   end
 
-  def self.bases(path_to_config_file="#{Airmodel.root}/config/bases.yml")
+  def self.bases(path_to_config_file="#{Dir.pwd}/config/bases.yml")
     @@bases ||= YAML.load_file(path_to_config_file)
     @@bases
   end
