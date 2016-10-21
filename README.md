@@ -69,6 +69,10 @@ Now you can write code like
 
 		Song.where("Artist Name": "The Beatles", "Composer": "Harrison")
 
+		Song.find("recXYZ")
+
+		Song.find(["recXYZ", "recABC", "recJKL"])
+
 See lib/airmodel/model.rb for all available methods.
 
 
