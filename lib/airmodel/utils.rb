@@ -9,13 +9,13 @@ module Airmodel
     # each backed by a base defined in DB YAML file
     def tables(args={})
       db = Airmodel.bases[table_name] || raise(NoSuchBase.new("Could not find base '#{table_name}' in config file"))
-      bases = normalized_base_config(db[:bases])
+      bases_list = normalized_base_config(db[:bases])
       # return just one Airtable::Table if a particular shard was requested
       if args[:shard]
-        [Airmodel.client.table(bases[args.delete(:shard)], db[:table_name])]
+        [Airmodel.client.table(bases_list[args.delete(:shard)], db[:table_name])]
       # otherwise return each one
       else
-        bases.map{|key, val| Airmodel.client.table val, db[:table_name] }
+        bases_list.map{|key, val| Airmodel.client.table val, db[:table_name] }
       end
     end
 

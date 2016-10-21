@@ -71,6 +71,19 @@ describe TestModel do
       end
     end
 
+    describe "find" do
+      it "should call airtable-ruby's 'find' method when passed just one record ID" do
+        stub_airtable_response! "https://api.airtable.com/v0/appXYZ/example_table/recABC", { "id":"recABC", fields: {"name": "example record"} }
+        record = TestModel.find("recABC")
+        expect(record.name).to eq "example record"
+      end
+      it "should return an ordered list of records when passed an array of record IDs" do
+        records = TestModel.find(["recABC", "recXYZ"])
+        expect(records.class).to eq Array
+        expect(records.first.id).to eq "recABC"
+      end
+    end
+
     describe "find_by" do
       it "should return one record that matches the supplied filters", skip_before: true do
         stub_airtable_response!(

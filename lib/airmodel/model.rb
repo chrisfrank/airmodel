@@ -29,6 +29,24 @@ module Airmodel
       )
     end
 
+    # find a record by ID.
+    # IF you've (1) defined an 'id' Field in Airtable, (2) made it a formula,
+    # and (3) set the formula to RECORD_ID(),
+    # THEN you can pass self.find([an,array,of,ids]) and it will return
+    # each record in that order. This is mostly only useful for looking up
+    # records linked to a particular record.
+    def self.find(id, shard=nil)
+      if id.is_a? String
+        results = self.classify tables(shard: shard).map{|tbl| tbl.find(id) }
+        results.count == 0 ? nil : results.first
+      else
+        formula = "OR(" + id.map{|x| "id='#{x}'" }.join(',') + ")"
+        some(shard: shard, filterByFormula: formula).sort_by do |x|
+          id.index(x.id)
+        end
+      end
+    end
+
     # find a record by specified attributes, return it
     def self.find_by(filters)
       shard = filters.delete(:shard)
