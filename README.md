@@ -30,20 +30,11 @@ before your app starts...
 
 		:songs:
 			:table_name: Songs
-			:bases: appXYZ123ABC
+			:base_id: appXYZ123ABC
 		:albums:
 			:table_name: Albums
-			:bases: appZZTOPETC
+			:base_id: appZZTOPETC
 
-	Airmodel supports sharding your data across multiple Airtable bases, as long as
-they all have the same structure. If you've split your customers into east- and
-west-coast bases, for example, your YAML file should look like this:
-
-		:songs:
-			:table_name: Customers
-			:bases:
-				"east_coast": appXYZ123ABC
-				"west_coast": appWXYOMGWTF
 
 Usage
 ----------------
@@ -81,7 +72,5 @@ Contributions
 
 Add a test to spec/models_spec.rb, make sure it passes, then send a pull
 request. Thanks!
-
-
 
 

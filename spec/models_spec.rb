@@ -9,7 +9,7 @@ describe TestModel do
     config = Airmodel.bases[:test_models]
     #stub INDEX requests
     stub_airtable_response!(
-      Regexp.new("https://api.airtable.com/v0/#{config[:bases]}/#{config[:table_name]}"),
+      Regexp.new("https://api.airtable.com/v0/#{config[:base_id]}/#{config[:table_name]}"),
       { "records" => [{"id": "recXYZ", fields: {"color":"red"} }, {"id":"recABC", fields: {"color": "blue"} }] }
     )
     #stub CREATE requests
@@ -24,13 +24,11 @@ describe TestModel do
   end
 
   describe "Class Methods" do
-    describe "tables" do
-      it "should return Airtable::Table objects for each base in the config file" do
-        tables = TestModel.tables
-        tables.each do |t|
-          expect(t.class).to eq Airtable::Table
-          expect(t.app_token).not_to eq nil
-        end
+    describe "table" do
+      it "should return an Airtable::Table object" do
+        table = TestModel.table
+        expect(table.class).to eq Airtable::Table
+        expect(table.app_token).not_to eq nil
       end
     end
 
@@ -222,53 +220,6 @@ describe TestModel do
       end
       it "should convert 'false' to a boolean" do
         expect(formatted_attrs["falsy_string"]).to eq false
-      end
-    end
-
-  end
-end
-
-class ShardedTestModel < Airmodel::Model
-end
-
-describe ShardedTestModel do
-  let(:config) { Airmodel.bases[:test_models_sharded] }
-
-  describe "class_methods" do
-
-    describe "tables" do
-      it "should return Airtable::Table objects for each base in the config file" do
-        tables = ShardedTestModel.tables
-        tables.each do |t|
-          expect(t.class).to eq Airtable::Table
-          expect(t.app_token.class).to eq String
-        end
-      end
-      it "should return just the one table matching args[:shard]" do
-        tables = ShardedTestModel.tables(shard: "east_coast")
-      end
-    end
-
-    describe "normalized_base_config" do
-      it "should return a hash from a string" do
-        sample_config = "appXYZ"
-        target = { "appXYZ" => "appXYZ" }
-        expect(TestModel.normalized_base_config(sample_config)).to eq target
-      end
-      it "should return a hash from an array of strings" do
-        sample_config = %w(appXYZ appABC)
-        target = { "appXYZ" => "appXYZ", "appABC" => "appABC" }
-        expect(TestModel.normalized_base_config(sample_config)).to eq target
-      end
-      it "should return a hash from an array of hashes" do
-        sample_config = [{"nyc": "appXYZ"}, {"sf": "appABC"}]
-        target = { "nyc": "appXYZ", "sf": "appABC" }
-        expect(TestModel.normalized_base_config(sample_config)).to eq target
-      end
-      it "should return itself from a hash" do
-        sample_config = {"nyc": "appXYZ", "sf": "appABC" }
-        target = { "nyc": "appXYZ", "sf": "appABC" }
-        expect(TestModel.normalized_base_config(sample_config)).to eq target
       end
     end
 

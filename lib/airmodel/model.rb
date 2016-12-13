@@ -8,22 +8,20 @@ module Airmodel
     # Where possible, use Model.some instead.
     def self.all(args={sort: default_sort})
       puts "RUNNING EXPENSIVE API QUERY TO AIRTABLE (#{self.name})"
-      self.classify tables(args).map{|tbl| tbl.all(args)}.flatten
+      self.classify table.all(args)
     end
 
     # returns up to 100 records from Airtable
     def self.some(args={sort: default_sort})
       puts "RUNNING EXPENSIVE API QUERY TO AIRTABLE (#{self.name})"
-      self.classify tables(args).map{|tbl| tbl.records(args) }.flatten
+      self.classify table.records(args)
     end
 
     # find up to 100 records that match the filters
     def self.where(filters)
-      shard = filters.delete(:shard)
       order = filters.delete(:sort)
       formula = "AND(" + filters.map{|k,v| "{#{k}}='#{v}'" }.join(',') + ")"
       some(
-        shard: shard,
         sort: order,
         filterByFormula: formula,
       )
@@ -35,13 +33,13 @@ module Airmodel
     # THEN you can pass self.find([an,array,of,ids]) and it will return
     # each record in that order. This is mostly only useful for looking up
     # records linked to a particular record.
-    def self.find(id, shard=nil)
+    def self.find(id)
       if id.is_a? String
-        results = self.classify tables(shard: shard).map{|tbl| tbl.find(id) }
+        results = self.classify table.find(id)
         results.count == 0 ? nil : results.first
       else
         formula = "OR(" + id.map{|x| "id='#{x}'" }.join(',') + ")"
-        some(shard: shard, filterByFormula: formula).sort_by do |x|
+        some(filterByFormula: formula).sort_by do |x|
           id.index(x.id)
         end
       end
@@ -49,13 +47,11 @@ module Airmodel
 
     # find a record by specified attributes, return it
     def self.find_by(filters)
-      shard = filters.delete(:shard)
       if filters[:id]
-        results = self.classify tables(shard: shard).map{|tbl| tbl.find(filters[:id]) }
+        results = self.classify table.find(filters[:id])
       else
         formula = "AND(" + filters.map{|k,v| "{#{k}}='#{v}'" }.join(',') + ")"
         results = some(
-          shard: shard,
           filterByFormula: formula,
           limit: 1
         )
@@ -81,38 +77,37 @@ module Airmodel
     def self.create(*models)
       results = models.map{|r|
         record = self.new(r)
-        tables.map{|tbl| tbl.create(record) }.first
+        table.create(record)
       }
       results.length == 1 ? results.first : results
     end
 
     # send a PATCH request to update a few fields on a record in one API call
-    def self.patch(id, fields, shard=nil)
-      r = tables(shard: shard).map{|tbl|
-        tbl.update_record_fields(id, airtable_formatted(fields))
-      }.first
+    def self.patch(id, fields)
+      r = table.update_record_fields(id, airtable_formatted(fields))
       self.new(r.fields)
     end
 
     # INSTANCE METHODS
 
+    # return self.class.table. defined as an instance
+    # method to allow individual models to override it and
+    # connect to a different base in strange circumstances.
+    def table
+      self.class.table
+    end
+
     def formatted_fields
       self.class.airtable_formatted(self.fields)
     end
 
-    def save(shard=self.shard_identifier)
+    def save
       if self.valid?
         if new_record?
-          results = self.class.tables(shard: shard).map{|tbl|
-            tbl.create self
-          }
-          # return the first version of this record that saved successfully
-          results.find{|x| !!x }
+          self.table.create(self)
         else
-          results = self.class.tables(shard: shard).map{|tbl|
-            tbl.update_record_fields(id, self.changed_fields)
-          }
-          results.find{|x| !!x }
+          result = self.table.update_record_fields(id, self.changed_fields)
+          result
         end
       else
         false
@@ -121,18 +116,18 @@ module Airmodel
 
     def changed_fields
       current = fields
-      old = self.class.find_by(id: id, shard: shard_identifier).fields
+      old = self.class.find_by(id: id).fields
       self.class.hash_diff(current, old)
     end
 
     def destroy
-      self.class.tables(shard: shard_identifier).map{|tbl| tbl.destroy(id) }.first
+      self.table.destroy(id)
     end
 
     def update(fields)
-      res = self.class.tables(shard: shard_identifier).map{|tbl| tbl.update_record_fields(id, fields) }.first
+      res = self.table.update_record_fields(id, fields)
       res.fields.each{|field, value| self[field] = value }
-      true
+      self
     end
 
     def new_record?
@@ -151,13 +146,6 @@ module Airmodel
     # override if you want to return validation errors
     def errors
       {}
-    end
-
-    # getter method that should return the YAML key that defines
-    # which shard the record lives in. Override if you're sharding
-    # your data, otherwise just let it return nil
-    def shard_identifier
-      nil
     end
 
   end

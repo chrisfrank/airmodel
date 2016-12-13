@@ -5,18 +5,11 @@ module Airmodel
       self.name.tableize.to_sym
     end
     #
-    # return an array of Airtable::Table objects,
-    # each backed by a base defined in DB YAML file
-    def tables(args={})
-      db = Airmodel.bases[table_name] || raise(NoSuchBase.new("Could not find base '#{table_name}' in config file"))
-      bases_list = normalized_base_config(db[:bases])
-      # return just one Airtable::Table if a particular shard was requested
-      if args[:shard]
-        [Airmodel.client.table(bases_list[args.delete(:shard)], db[:table_name])]
-      # otherwise return each one
-      else
-        bases_list.map{|key, val| Airmodel.client.table val, db[:table_name] }
-      end
+    # return an Airtable::Table object,
+    # backed by a base defined in DB YAML file
+    def table(args={})
+      base_config = Airmodel.bases[table_name] || raise(NoSuchBase.new("Could not find base '#{table_name}' in config file"))
+      Airmodel.client.table base_config[:base_id], base_config[:table_name]
     end
 
     def at(base_id, table_name)
@@ -25,8 +18,14 @@ module Airmodel
 
     ## converts array of generic airtable records to the instances
     # of the appropriate class
-    def classify(list=[])
-      list.map{|r| self.new(r.fields) }
+    def classify(obj=[])
+      if obj.is_a? Airtable::Record
+        [self.new(obj.fields)]
+      elsif obj.respond_to? :map
+        obj.map{|r| self.new(r.fields) }
+      else
+        raise AlienObject.new "Object is neither an array nor an Airtable::Model"
+      end
     end
 
     # convert blank strings to nil, [""] to [], and "true" to a boolean
@@ -44,27 +43,6 @@ module Airmodel
         end
       }
     end
-
-    # standardizes bases from config file, whether you've defined
-    # your bases as a single string, a hash, an array,
-    # or an array of hashes, returns hash of form { "base_label" => "base_id" }
-    def normalized_base_config(config)
-      if config.is_a? String
-        { "#{config}" => config }
-      elsif config.is_a? Array
-        parsed = config.map{|x|
-          if x.respond_to? :keys
-            [x.keys.first, x.values.first]
-          else
-            [x,x]
-          end
-        }
-        Hash[parsed]
-      else
-        config
-      end
-    end
-
 
     # Returns a hash that removes any matches with the other hash
     #
@@ -96,5 +74,9 @@ module Airmodel
     def -(first_hash, second_hash)
       hash_diff(first_hash, second_hash)
     end
+
+    class AlienObject < StandardError
+    end
+
   end
 end
