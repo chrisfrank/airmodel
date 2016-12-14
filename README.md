@@ -70,7 +70,7 @@ See lib/airmodel/model.rb for all available methods.
 Contributions
 ----------------
 
-Add a test to spec/models_spec.rb, make sure it passes, then send a pull
+Add a test to spec/model_spec.rb, make sure it passes, then send a pull
 request. Thanks!
 
 

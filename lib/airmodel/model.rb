@@ -1,6 +1,7 @@
 module Airmodel
   class Model < Airtable::Record
     extend Utils
+    extend Associable
 
     # returns all records in a table, making as many calls as necessary
     # to work around Airtable's 100-record per page design. This can be VERY

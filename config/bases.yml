@@ -1,3 +1,6 @@
-:test_models:
-  :table_name: "example_table"
+:albums:
+  :table_name: "albums"
+  :base_id: appXYZ
+:songs:
+  :table_name: "songs"
   :base_id: appXYZ

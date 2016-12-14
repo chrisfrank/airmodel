@@ -3,6 +3,7 @@ require 'airtable'
 
 require "airmodel/version"
 require "airmodel/utils"
+require "airmodel/associable"
 require "airmodel/model"
 
 # builds ActiveRecord-style models on top of Airtable

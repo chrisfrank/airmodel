@@ -2,13 +2,20 @@ module Airmodel
   module Utils
 
     def table_name
-      self.name.tableize.to_sym
+      @table_name || self.name.tableize.to_sym
+    end
+
+    def base_config
+      if @base_id
+        { :base_id => @base_id, :table_name => table_name }
+      else
+        Airmodel.bases[table_name] || raise(NoSuchBase.new("Could not find base '#{table_name}' in config file"))
+      end
     end
     #
     # return an Airtable::Table object,
     # backed by a base defined in DB YAML file
-    def table(args={})
-      base_config = Airmodel.bases[table_name] || raise(NoSuchBase.new("Could not find base '#{table_name}' in config file"))
+    def table
       Airmodel.client.table base_config[:base_id], base_config[:table_name]
     end
 
