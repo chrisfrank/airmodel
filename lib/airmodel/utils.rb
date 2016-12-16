@@ -31,7 +31,7 @@ module Airmodel
       elsif obj.respond_to? :map
         obj.map{|r| self.new(r.fields) }
       else
-        raise AlienObject.new "Object is neither an array nor an Airtable::Model"
+        raise AlienObject.new("Object is neither an array nor an Airtable::Model")
       end
     end
 

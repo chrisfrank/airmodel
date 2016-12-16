@@ -39,13 +39,6 @@ describe Album do
       end
     end
 
-    describe "some" do
-      it "should return a list of airtable records" do
-        records = Album.some
-        expect(records.first.id).to eq "recXYZ"
-      end
-    end
-
     describe "classify" do
       it "should return albums from Airtable::Records" do
         array = [Airtable::Record.new]
@@ -79,6 +72,7 @@ describe Album do
         records = Album.find(["recABC", "recXYZ"])
         expect(records.class).to eq Array
         expect(records.first.id).to eq "recABC"
+        expect(records.first.class).to eq Album
       end
     end
 
@@ -90,11 +84,13 @@ describe Album do
         )
         record = Album.find_by(color: "blue")
         expect(record.color).to eq "blue"
+        expect(record.class).to eq Album
       end
       it "should call airtable-ruby's 'find' method when the filter is an id" do
         stub_airtable_response! "https://api.airtable.com/v0/appXYZ/albums/recABC", { "id":"recABC", fields: {"name": "example record"} }
         record = Album.find_by(id: "recABC")
         expect(record.name).to eq "example record"
+        expect(record.class).to eq Album
       end
     end
 
@@ -232,7 +228,7 @@ end
 describe BaselessModel do
   describe "it should raise a NoSuchBaseError when no base is defined" do
     begin
-      records = BaselessModel.some
+      records = BaselessModel.all
       false
     rescue Airmodel::NoSuchBase
       true

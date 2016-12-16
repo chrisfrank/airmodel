@@ -2,6 +2,7 @@ require 'active_support/all'
 require 'airtable'
 
 require "airmodel/version"
+require "airmodel/query"
 require "airmodel/utils"
 require "airmodel/associable"
 require "airmodel/model"

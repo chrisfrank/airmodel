@@ -60,6 +60,8 @@ describe ParentModel do
       expect(tunes.first.table.worksheet_name).to eq 'tunes'
     end
 
+    it 'should let me define the important args however I like'
+
   end
 
 end

@@ -3,29 +3,20 @@ module Airmodel
     extend Utils
     extend Associable
 
-    # returns all records in a table, making as many calls as necessary
-    # to work around Airtable's 100-record per page design. This can be VERY
-    # slow, and should not be used in production unless you cache it agressively.
-    # Where possible, use Model.some instead.
-    def self.all(args={sort: default_sort})
-      puts "RUNNING EXPENSIVE API QUERY TO AIRTABLE (#{self.name})"
-      self.classify table.all(args)
+    def self.all
+      Query.new(self).all
     end
 
-    # returns up to 100 records from Airtable
-    def self.some(args={sort: default_sort})
-      puts "RUNNING EXPENSIVE API QUERY TO AIRTABLE (#{self.name})"
-      self.classify table.records(args)
+    def self.where(args)
+      Query.new(self).where(args)
     end
 
-    # find up to 100 records that match the filters
-    def self.where(filters)
-      order = filters.delete(:sort)
-      formula = "AND(" + filters.map{|k,v| "{#{k}}='#{v}'" }.join(',') + ")"
-      some(
-        sort: order,
-        filterByFormula: formula,
-      )
+    def self.order(args)
+      Query.new(self).order(args)
+    end
+
+    def self.limit(args)
+      Query.new(self).limit(args)
     end
 
     # find a record by ID.
@@ -40,9 +31,11 @@ module Airmodel
         results.count == 0 ? nil : results.first
       else
         formula = "OR(" + id.map{|x| "id='#{x}'" }.join(',') + ")"
-        some(filterByFormula: formula).sort_by do |x|
-          id.index(x.id)
-        end
+        self.classify(
+          table.records(filterByFormula: formula).sort_by do |x|
+            id.index(x.id)
+          end
+        )
       end
     end
 
@@ -52,9 +45,11 @@ module Airmodel
         results = self.classify table.find(filters[:id])
       else
         formula = "AND(" + filters.map{|k,v| "{#{k}}='#{v}'" }.join(',') + ")"
-        results = some(
-          filterByFormula: formula,
-          limit: 1
+        results = self.classify(
+          table.records(
+            filterByFormula: formula,
+            limit: 1
+          )
         )
       end
       results.count == 0 ? nil : results.first
@@ -68,10 +63,7 @@ module Airmodel
 
     # return the first record
     def self.first
-      results = some(
-        limit: 1
-      )
-      results.count == 0 ? nil : results.first
+      Query.new(self).first
     end
 
     # create a new record and save it to Airtable
