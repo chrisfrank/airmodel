@@ -1,19 +1,4 @@
-require 'spec_helper'
-
-describe Airmodel::Query do
-  let(:qry) { Airmodel::Query.new }
-  #describe 'where' do
-    #it 'remembers filters in a CLAUSES hash' do
-      #qry.where(:kind => 'interesting')
-      #expect(qry.filters[:clauses]).to include :kind
-    #end
-    #it 'is chainable' do
-      #qry.where(:intelligence => 'low', adult: true).where('meaning' => 'none')
-      #expect(qry.filters[:clauses]).to include :intelligence
-      #expect(qry.filters[:clauses]).to include 'meaning'
-    #end
-  #end
-end
+require "spec_helper"
 
 class Album < Airmodel::Model
 end
@@ -34,14 +19,25 @@ describe Album do
   end
 
 
-  describe 'where' do
-    it 'allows chaining' do
-      m = Album.where(
-        'name' => 'Tidal',
-        'artist' => 'Fiona Apple',
-        'great' => true
+  describe "where" do
+    it "allows chaining" do
+      q = Album.where(
+        "name" => "Tidal",
+        "artist" => "Fiona Apple",
+        "great" => true
       ).limit(10)
-      binding.pry
+      expect(q.class).to eq Airmodel::Query
+      # it should execute the query on
+      # query.all, and return an array
+      expect(q.all.class).to be Array
+    end
+
+    it "can replace where_clauses with a raw airtable formula" do
+      formula = "NOT({Rating} < 4"
+      q = Album.where("great" => true).by_formula(formula)
+      expect(q.params[:where_clauses]).to be {}
+      expect(q.params[:formula]).to be formula
+      expect(q.all.class).to be Array
     end
   end
 

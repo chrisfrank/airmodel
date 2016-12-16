@@ -52,17 +52,29 @@ Now you can write code like
 
 		Song.all
 
-		Song.some
+		Song.where("Artist Name": "The Beatles", "Composer": "Harrison")
 
 		Song.first
 
 		Song.new("Name": "Best Song Ever").save
 
-		Song.where("Artist Name": "The Beatles", "Composer": "Harrison")
-
 		Song.find("recXYZ")
 
 		Song.find(["recXYZ", "recABC", "recJKL"])
+
+
+Most queries are chainable, e.g.
+
+		Song.where("rating" => 5).where('artist' => "Fiona Apple").order("rating", "DESC").limit(5)
+
+There's also a special `Model.by_formula` query, which overrides any filters
+supplied in your `Model.where()` statements, and replaces them with a raw
+[Airtable
+Formula](https://support.airtable.com/hc/en-us/articles/203255215-Formula-field-reference)
+
+You can still chain `.limit` and `.order` with a `.by_forumla` query.
+
+		Song.by_formula("NOT({Rating} < 3)").order("rating", "DESC").limit(5)
 
 See lib/airmodel/model.rb for all available methods.
 
@@ -70,7 +82,7 @@ See lib/airmodel/model.rb for all available methods.
 Contributions
 ----------------
 
-Add a test to spec/model_spec.rb, make sure it passes, then send a pull
+Add a passing test to spec/model_spec.rb, then send a pull
 request. Thanks!
 
 

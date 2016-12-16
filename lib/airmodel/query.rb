@@ -7,13 +7,19 @@ module Airmodel
 
     def params
       @params ||= {
-        filters: {},
+        where_clauses: {},
         order: @querying_class.default_sort
       }
     end
 
     def where(args)
-      params[:filters].merge!(args)
+      params[:where_clauses].merge!(args)
+      self
+    end
+
+    def by_formula(formula)
+      params[:where_clauses] = {}
+      params[:formula] = formula
       self
     end
 
@@ -23,14 +29,15 @@ module Airmodel
     end
 
     def order(column, direction)
-      params[:order] = [column, direction]
+      params[:order] = [column, direction.downcase.to_sym]
       self
     end
 
     # add kicker methods
     def to_a
       puts "RUNNING EXPENSIVE API QUERY TO AIRTABLE (#{@querying_class.name})"
-      formula = "AND(" + params[:filters].map{|k,v| "{#{k}}='#{v}'" }.join(',') + ")"
+      # filter by explicit formula, or by joining all where_clasues together
+      formula = params[:formula] || "AND(" + params[:where_clauses].map{|k,v| "{#{k}}='#{v}'" }.join(',') + ")"
       @querying_class.classify @querying_class.table.all(
         sort: params[:order],
         filterByFormula: formula,

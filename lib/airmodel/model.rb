@@ -11,6 +11,10 @@ module Airmodel
       Query.new(self).where(args)
     end
 
+    def self.by_formula(args)
+      Query.new(self).by_formula(args)
+    end
+
     def self.order(args)
       Query.new(self).order(args)
     end

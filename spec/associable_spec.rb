@@ -52,7 +52,8 @@ describe ParentModel do
     end
 
     it 'should work with a base_key instead of a yml file' do
-      stub_airtable_response!("https://api.airtable.com/v0/appABCDEF/tunes?limit=1",
+      stub_airtable_response!(
+        Regexp.new("https://api.airtable.com/v0/appABCDEF/tunes"),
         { "records" => [{"id": "recXYZ", fields: {"color":"red"} }, {"id":"recABC", fields: {"color": "blue"} }] }
       )
       ParentModel.has_many :tunes, base_key: 'dynamically_assigned_child_base_id', class_name: 'Song'
