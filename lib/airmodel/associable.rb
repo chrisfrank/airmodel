@@ -15,10 +15,15 @@ module Airmodel
                      base_id: self.send(args[:base_key]),
                      table_name: args[:table_name] || association_name.to_s.tableize
                    }
+                   # maybe the base is defined in the config file
+                 elsif c = Airmodel.bases[args[:class_name].tableize.to_sym]
+                   c
+                # maybe the base is just a table in the same base as the parent
                  else
-                   # the airtable base info is defined in the
-                   # YML config file, with the rest of the data
-                   Airmodel.bases[args[:class_name].tableize.to_sym] || raise(NoSuchBase.new("Couldn't find base '#{association_name}' in config file.\nPlease pass :base_key => foo with your has_many call,\nor add '#{association_name}' to your config file."))
+                   {
+                     base_id: self.class.base_config[:base_id],
+                     table_name: args[:table_name] || association_name.to_s.tableize
+                   }
                  end
         finder_name = "@#{association_name}_finder"
         if f = instance_variable_get(finder_name)

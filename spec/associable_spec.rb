@@ -3,6 +3,9 @@ require 'spec_helper'
 class Song < Airmodel::Model
 end
 
+class Author < Airmodel::Model
+end
+
 class ParentModel < Airmodel::Model
   has_many :songs
 
@@ -19,6 +22,10 @@ describe ParentModel do
     stub_airtable_response!(
       Regexp.new("https://api.airtable.com/v0/#{config[:base_id]}/#{config[:table_name]}"),
       { "records" => [{"id": "recXYZ", fields: {"color":"red"} }, {"id":"recABC", fields: {"color": "blue"} }] }
+    )
+    stub_airtable_response!(
+      Regexp.new("https://api.airtable.com/v0/#{config[:base_id]}/authors"),
+      { "records" => [{"id": "recXYZ", fields: {"name":"Dylan"} }, {"id":"recABC", fields: {"name": "Simon"} }] }
     )
     #stub CREATE requests
     stub_airtable_response!("https://api.airtable.com/v0/appXYZ/albums",
@@ -38,10 +45,17 @@ describe ParentModel do
       expect(songs.table_name).to eq 'songs'
     end
 
+    it "Should look in the parent model's base when not passed a base_key" do
+      Song.has_many :authors
+      authors = Song.new.authors.all
+      expect(authors.first.name).to eq "Dylan"
+    end
+
     it 'should raise NoSuchBase when passed a weird association not backed by bases.yml' do
       begin
         ParentModel.has_many :unusual_children
-        false
+        ParentModel.new.unusual_children
+        expect(true).to eq false
       rescue Airmodel::NoSuchBase
         true
       end
