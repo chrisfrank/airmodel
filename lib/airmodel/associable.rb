@@ -33,9 +33,18 @@ module Airmodel
             @base_id = config[:base_id]
             @table_name = config[:table_name]
           end
-          instance_variable_set(finder_name, finder)
+          constraints = if args[:constraints].respond_to?(:call)
+                          args[:constraints].call(self)
+                        else
+                          {}
+                        end
+          instance_variable_set(finder_name, finder.where(constraints))
         end
       end
+    end
+
+    def default_has_many_contraints
+      true
     end
 
   end

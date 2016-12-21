@@ -27,6 +27,10 @@ describe ParentModel do
       Regexp.new("https://api.airtable.com/v0/#{config[:base_id]}/authors"),
       { "records" => [{"id": "recXYZ", fields: {"name":"Dylan"} }, {"id":"recABC", fields: {"name": "Simon"} }] }
     )
+    stub_airtable_response!(
+      Regexp.new("https://api.airtable.com/v0/#{config[:base_id]}/songs"),
+      { "records" => [{"id": "recXYZ", fields: {"name":"Love Sick"} }, {"id":"recABC", fields: {"name": "Graceland"} }] }
+    )
     #stub CREATE requests
     stub_airtable_response!("https://api.airtable.com/v0/appXYZ/albums",
       { "fields" => { "color" => "red", "foo" => "bar" }, "id" => "12345" },
@@ -42,7 +46,7 @@ describe ParentModel do
   describe 'has_many' do
     it 'should return a list of songs' do
       songs = ParentModel.new.songs
-      expect(songs.table_name).to eq 'songs'
+      expect(songs.first.is_a? Song).to be true
     end
 
     it "Should look in the parent model's base when not passed a base_key" do
