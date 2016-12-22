@@ -14,7 +14,7 @@ module Airmodel
     File.expand_path '../..', __FILE__
   end
 
-  def self.client(api_key=ENV["AIRTABLE_API_KEY"])
+  def self.client(api_key=ENV.fetch("AIRTABLE_API_KEY") )
     @@api_client ||= Airtable::Client.new(api_key)
     @@api_client
   end

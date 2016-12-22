@@ -20,7 +20,9 @@ Gem::Specification.new do |spec|
   spec.add_development_dependency 'rake', '~> 10'
   spec.add_development_dependency 'rspec', '~> 3'
   spec.add_development_dependency 'pry', '~> 0.10'
-  spec.add_development_dependency 'fakeweb', '~> 1.3'
+  spec.add_development_dependency 'vcr', '~> 3.0.3'
+  spec.add_development_dependency 'dotenv', '~> 2.1.1'
+  spec.add_development_dependency 'webmock', '~> 2.3.1'
 
   spec.add_dependency 'airtable', '~> 0.0.9'
   spec.add_dependency 'activesupport', '~> 5.0'

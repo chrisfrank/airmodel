@@ -3,45 +3,19 @@ require 'spec_helper'
 class Song < Airmodel::Model
 end
 
-class Author < Airmodel::Model
+class Album < Airmodel::Model
 end
 
 class ParentModel < Airmodel::Model
   has_many :songs
 
   def dynamically_assigned_child_base_id
-    'appABCDEF'
+    "appTE8VIb595FI4c6"
   end
+
 end
 
 describe ParentModel do
-
-  before(:each) do
-    config = Airmodel.bases[:albums]
-    #stub INDEX requests
-    stub_airtable_response!(
-      Regexp.new("https://api.airtable.com/v0/#{config[:base_id]}/#{config[:table_name]}"),
-      { "records" => [{"id": "recXYZ", fields: {"color":"red"} }, {"id":"recABC", fields: {"color": "blue"} }] }
-    )
-    stub_airtable_response!(
-      Regexp.new("https://api.airtable.com/v0/#{config[:base_id]}/authors"),
-      { "records" => [{"id": "recXYZ", fields: {"name":"Dylan"} }, {"id":"recABC", fields: {"name": "Simon"} }] }
-    )
-    stub_airtable_response!(
-      Regexp.new("https://api.airtable.com/v0/#{config[:base_id]}/songs"),
-      { "records" => [{"id": "recXYZ", fields: {"name":"Love Sick"} }, {"id":"recABC", fields: {"name": "Graceland"} }] }
-    )
-    #stub CREATE requests
-    stub_airtable_response!("https://api.airtable.com/v0/appXYZ/albums",
-      { "fields" => { "color" => "red", "foo" => "bar" }, "id" => "12345" },
-      :post
-    )
-  end
-
-  after(:each) do
-    FakeWeb.clean_registry
-  end
-
 
   describe 'has_many' do
     it 'should return a list of songs' do
@@ -50,9 +24,9 @@ describe ParentModel do
     end
 
     it "Should look in the parent model's base when not passed a base_key" do
-      Song.has_many :authors
-      authors = Song.new.authors.all
-      expect(authors.first.name).to eq "Dylan"
+      Song.has_many :albums
+      albums = Song.first.albums.all
+      expect(albums.first.name).to eq "Blood on the Tracks"
     end
 
     it 'should raise NoSuchBase when passed a weird association not backed by bases.yml' do
@@ -70,13 +44,9 @@ describe ParentModel do
     end
 
     it 'should work with a base_key instead of a yml file' do
-      stub_airtable_response!(
-        Regexp.new("https://api.airtable.com/v0/appABCDEF/tunes"),
-        { "records" => [{"id": "recXYZ", fields: {"color":"red"} }, {"id":"recABC", fields: {"color": "blue"} }] }
-      )
-      ParentModel.has_many :tunes, base_key: 'dynamically_assigned_child_base_id', class_name: 'Song'
+      ParentModel.has_many :tunes, base_key: 'dynamically_assigned_child_base_id', class_name: 'Song', table_name: "Songs"
       tunes = ParentModel.new.tunes
-      expect(tunes.first.table.worksheet_name).to eq 'tunes'
+      expect(tunes.first.table.worksheet_name).to eq "Songs"
     end
 
     it 'should let me define the important args however I like'

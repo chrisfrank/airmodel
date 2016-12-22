@@ -1,6 +1,6 @@
 :albums:
-  :table_name: "albums"
-  :base_id: appXYZ
+  :table_name: Albums
+  :base_id: appTE8VIb595FI4c6
 :songs:
-  :table_name: "songs"
-  :base_id: appXYZ
+  :table_name: Songs
+  :base_id: appTE8VIb595FI4c6

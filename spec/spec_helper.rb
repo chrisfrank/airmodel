@@ -1,21 +1,22 @@
-require 'airmodel'
-require 'fakeweb'
-require 'pry'
-
-def stub_airtable_response!(url, response, method=:get)
-  FakeWeb.register_uri(
-    method,
-    url,
-    body: response.to_json,
-    content_type: "application/json"
-  )
-end
+require "airmodel"
+require "pry"
+require "vcr"
+require "dotenv"
+require "webmock/rspec"
+Dotenv.load
 
 RSpec.configure do |config|
   config.color = true
+  config.extend VCR::RSpec::Macros
 end
 
-FakeWeb.allow_net_connect = false
+VCR.configure do |config|
+  config.allow_http_connections_when_no_cassette = true
+  config.cassette_library_dir = "#{Airmodel.root}/spec/fixtures/vcr_cassettes"
+  config.hook_into :webmock
+  config.default_cassette_options = { :record => :new_episodes }
+  config.filter_sensitive_data("<AIRTABLE_API_KEY>") { ENV.fetch('AIRTABLE_API_KEY') }
+end
 
 # enable Debug mode in Airtable
 module Airtable

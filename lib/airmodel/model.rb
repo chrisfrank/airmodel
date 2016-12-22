@@ -45,18 +45,7 @@ module Airmodel
 
     # find a record by specified attributes, return it
     def self.find_by(filters)
-      if filters[:id]
-        results = self.classify table.find(filters[:id])
-      else
-        formula = "AND(" + filters.map{|k,v| "{#{k}}='#{v}'" }.join(',') + ")"
-        results = self.classify(
-          table.records(
-            filterByFormula: formula,
-            limit: 1
-          )
-        )
-      end
-      results.count == 0 ? nil : results.first
+      Query.new(self).find_by(filters)
     end
 
     # default to whatever order Airtable returns
