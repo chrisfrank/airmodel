@@ -9,6 +9,7 @@ module Airmodel
     def params
       @params ||= {
         where_clauses: {},
+        formulas: [],
         order: @querying_class.default_sort
       }
     end
@@ -19,8 +20,12 @@ module Airmodel
     end
 
     def by_formula(formula)
-      params[:where_clauses] = {}
-      params[:formula] = formula
+      params[:formulas].push formula
+      self
+    end
+
+    def search(args)
+      params[:formulas].push "FIND('#{args[:q]}', {#{args[:field]}})"
       self
     end
 
@@ -38,7 +43,7 @@ module Airmodel
     def to_a
       puts "RUNNING EXPENSIVE API QUERY TO AIRTABLE (#{@querying_class.name})"
       # filter by explicit formula, or by joining all where_clasues together
-      formula = params[:formula] || "AND(" + params[:where_clauses].map{|k,v| "{#{k}}='#{v}'" }.join(',') + ")"
+      formula = "AND(" + params[:where_clauses].map{|k,v| "{#{k}}='#{v}'" }.join(',') + params[:formulas].join(',') + ")"
       @querying_class.classify @querying_class.table.records(
         sort: params[:order],
         filterByFormula: formula,

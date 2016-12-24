@@ -2,18 +2,16 @@ require "airmodel"
 require "pry"
 require "vcr"
 require "dotenv"
-require "webmock/rspec"
 Dotenv.load
 
 RSpec.configure do |config|
   config.color = true
   config.extend VCR::RSpec::Macros
+  config.order = :random
 end
 
-VCR.configure do |config|
-  config.allow_http_connections_when_no_cassette = true
+VCR.configure do |config| config.allow_http_connections_when_no_cassette = true
   config.cassette_library_dir = "#{Airmodel.root}/spec/fixtures/vcr_cassettes"
-  config.hook_into :webmock
   config.default_cassette_options = { :record => :new_episodes }
   config.filter_sensitive_data("<AIRTABLE_API_KEY>") { ENV.fetch('AIRTABLE_API_KEY') }
 end
