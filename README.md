@@ -52,7 +52,9 @@ Now you can write code like
 
 		Song.all
 
-		Song.where("Artist Name": "The Beatles", "Composer": "Harrison")
+		Song.where("Artist Name" => "The Beatles", "Composer" => "Harrison")
+
+		Song.search(:q => "Let it Be", fields: ["Name", "Album"])
 
 		Song.first
 
@@ -60,29 +62,35 @@ Now you can write code like
 
 		Song.find("recXYZ")
 
-		Song.find(["recXYZ", "recABC", "recJKL"])
+		Song.find_by("Composer" => "Harrison")
 
 
-Most queries are chainable, e.g.
+Queries are chainable, e.g.
 
-		Song.where("rating" => 5).where('artist' => "Fiona Apple").order("rating", "DESC").limit(5)
+		Song.where("rating" => 5).where('Artist' => "Fiona Apple").order("rating", "DESC").limit(5)
 
-There's also a special `Model.by_formula` query, which overrides any filters
-supplied in your `Model.where()` statements, and replaces them with a raw
+There's also a `Model.by_formula` query, which lets you pass explicit 
 [Airtable
-Formula](https://support.airtable.com/hc/en-us/articles/203255215-Formula-field-reference)
+Formulas](https://support.airtable.com/hc/en-us/articles/203255215-Formula-field-reference)
 
-You can still chain `.limit` and `.order` with a `.by_forumla` query.
+You can chain `.limit` and `.order` with a `.by_forumla` query.
 
 		Song.by_formula("NOT({Rating} < 3)").order("rating", "DESC").limit(5)
 
-See lib/airmodel/model.rb for all available methods.
+See `lib/airmodel/model.rb` for all model methods, and
+`lib/airmodel/query.rb` for all Query methods.
 
 
 Contributions
 ----------------
 
-Add a passing test to spec/model_spec.rb, then send a pull
-request. Thanks!
+I'm currently testing against a live Airtable base, because stubbing API
+calls has occasionally yielded false positives in my specs. To run the tests,
+create an Airtable account, set `AIRTABLE_API_KEY=[your API key]` in your `.env` file, and
+then visit [this link](https://airtable.com/invite/l?inviteId=invj96HyFOB6GF8Vq&inviteToken=2e98eff03a646162344bb997a06645e3)
+to request access to the base.
 
+Once that's all set, write a passing test for your feature and send a pull request.
+
+Thanks!
 
