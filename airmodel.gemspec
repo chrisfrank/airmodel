@@ -25,5 +25,5 @@ Gem::Specification.new do |spec|
   spec.add_development_dependency 'webmock', '~> 2.3'
 
   spec.add_dependency 'airtable', '~> 0.0.9'
-  spec.add_dependency 'activesupport', '~> 4.0'
+  spec.add_dependency 'activesupport', '~> 5'
 end
