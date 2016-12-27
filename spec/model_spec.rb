@@ -102,12 +102,14 @@ describe Album do
   describe "Instance Methods" do
 
     describe "save" do
-      record = Album.new("Name" => "His California Record")
       it "should create a new record" do
+        record = Album.new("Name" => "His California Record")
         record.save
         expect(record.id).not_to be nil
+        record.destroy
       end
       it "should update an existing record" do
+        record = Album.create("Name" => "His California Record")
         record["Artist"] = "Bobby Bland"
         record.save
         expect(record.artist).to eq "Bobby Bland"

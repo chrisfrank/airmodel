@@ -19,10 +19,12 @@ module Airmodel
       Query.new(self).search(args)
     end
 
+    # Model.order("Name DESC")
     def self.order(args)
-      Query.new(self).order(args)
+      Query.new(self).order(*args)
     end
 
+    # Model.limit(10)
     def self.limit(args)
       Query.new(self).limit(args)
     end
