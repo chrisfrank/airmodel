@@ -9,7 +9,6 @@ require "airmodel/model"
 
 # builds ActiveRecord-style models on top of Airtable
 module Airmodel
-
   def self.root
     File.expand_path '../..', __FILE__
   end
@@ -23,5 +22,6 @@ module Airmodel
     @@bases ||= YAML.load_file(path_to_config_file)
     @@bases
   end
-
 end
+
+Kernel.warn "Airmodel is no longer maintained.\nPlease migrate to Airrecord (https://rubygems.org/gems/airrecord)"
